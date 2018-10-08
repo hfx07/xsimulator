@@ -1,2 +1,2 @@
 # xsimulator
-exchange simulator for backtesting trading strategies
+exchange simulator for backtesting high frequency trading strategies

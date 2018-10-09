@@ -100,6 +100,7 @@ inline std::pair<double, bool> get_open_fee(const std::string& trading_day, cons
             fee = 0.045 / 1000;
             using_rate = true;
         }
+        /* INE */
         else if (instrument_id_alp == "sc")
         {
             fee = 20;
@@ -454,6 +455,7 @@ inline double get_close_mpl(const std::string& trading_day, const std::string& i
             mpl = 1;
         else if (instrument_id_alp == "ru")
             mpl = 1;
+        /* INE */
         else if (instrument_id_alp == "sc")
             mpl = 0;
         /* DCE */

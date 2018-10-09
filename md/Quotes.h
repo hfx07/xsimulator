@@ -29,6 +29,9 @@ Tick size, Contract size, Exchange, Market
 #ifndef EXCHANGE_SHFE
 #define EXCHANGE_SHFE   "SHFE"   //上海期货交易所
 #endif
+#ifndef EXCHANGE_INE
+#define EXCHANGE_INE   "INE"   //上海国际能源交易中心
+#endif
 #ifndef EXCHANGE_DCE
 #define EXCHANGE_DCE    "DCE"    //大连商品交易所
 #endif
@@ -82,6 +85,7 @@ inline int get_tick_size(const std::string& instrument_id, const std::string& tr
         tick_size = 2;
     else if (instrument_id_alp.compare("ru") == 0)
         tick_size = 5;
+    /* INE */
     else if (instrument_id_alp.compare("sc") == 0)
         tick_size = 0.1;
     /* DCE */
@@ -219,6 +223,7 @@ inline int get_contract_size(const std::string& instrument_id, const std::string
         contract_size = 10;
     else if (instrument_id_alp.compare("ru") == 0)
         contract_size = 10;
+    /* INE */
     else if (instrument_id_alp.compare("sc") == 0)
         contract_size = 1000;
     /* DCE */
@@ -349,7 +354,7 @@ inline std::string get_exchange(const std::string& instrument_id)
     else if (instrument_id_alp.compare("ru") == 0)
         exchange = EXCHANGE_SHFE;
     else if (instrument_id_alp.compare("sc") == 0)
-        exchange = EXCHANGE_SHFE;
+        exchange = EXCHANGE_INE;
     else if (instrument_id_alp.compare("c") == 0)
         exchange = EXCHANGE_DCE;
     else if (instrument_id_alp.compare("cs") == 0)
@@ -442,7 +447,7 @@ inline std::string get_market(const std::string& instrument_id)
     std::string exchange = get_exchange(instrument_id);
     if (exchange.compare(EXCHANGE_SSE) == 0 || exchange.compare(EXCHANGE_SZE) == 0)
         market = MARKET_CHINA_STOCK;
-    else if (exchange.compare(EXCHANGE_SHFE) == 0 || exchange.compare(EXCHANGE_DCE) == 0 || exchange.compare(EXCHANGE_CZCE) == 0)
+    else if (exchange.compare(EXCHANGE_SHFE) == 0 || exchange.compare(EXCHANGE_INE) == 0 || exchange.compare(EXCHANGE_DCE) == 0 || exchange.compare(EXCHANGE_CZCE) == 0)
         market = MARKET_CHINA_FUTURE_COMMODITY;
     else if (exchange.compare(EXCHANGE_CFFEX) == 0 && (instrument_id_alp.compare("IF") == 0 || instrument_id_alp.compare("IH") == 0 || instrument_id_alp.compare("IC") == 0))
         market = MARKET_CHINA_FUTURE_INDEX;

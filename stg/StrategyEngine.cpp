@@ -85,18 +85,21 @@ int StrategyEngine::req_position(short source)
     if (td.tick_period.compare("day") == 0)
     {
         long time = std::max(td.morning_start_time, md.tick_time);
-        std::cout << parse_milliseconds(time + td.latency) << " DEBUG " << name << " %% - [req_position] (source)" << source << std::endl;
+        if (log)
+            std::cout << parse_milliseconds(time + td.latency) << " DEBUG " << name << " %% - [req_position] (source)" << source << std::endl;
         on_rsp_position(&td.pos, (md.tick_time > 0) ? 0 : -1, source, time + 3 * td.latency);
     }
     else if (td.tick_period.compare("night") == 0)
     {
         long time = std::max(td.night_start_time, md.tick_time);
-        std::cout << parse_milliseconds(time + td.latency) << " DEBUG " << name << " %% - [req_position] (source)" << source << std::endl;
+        if (log)
+            std::cout << parse_milliseconds(time + td.latency) << " DEBUG " << name << " %% - [req_position] (source)" << source << std::endl;
         on_rsp_position(&td.pos, (md.tick_time > 0) ? 0 : -1, source, time + 3 * td.latency);
     }
     else
     {
-        std::cout << parse_milliseconds(md.tick_time) << " ERROR " << name << " %% - [req_position] (source)" << source << " (errMsg)交易时段必须为day、night或both" << std::endl;
+        if (log)
+            std::cout << parse_milliseconds(md.tick_time) << " ERROR " << name << " %% - [req_position] (source)" << source << " (errMsg)交易时段必须为day、night或both" << std::endl;
         stop = true;
     }
     return -1;
@@ -105,9 +108,15 @@ int StrategyEngine::req_position(short source)
 void StrategyEngine::on_rsp_position(const LFRspPositionField* pos, int request_id, short source, long rcv_time)
 {
     if (pos->LongPosition == pos->ShortPosition)
-        std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [rsp_position] (source)" << source << " (rid)" << request_id << " (pos)long " << pos->LongPosition << " short " << pos->ShortPosition << " (cost)" << pos->Cost << " (pnl)" << pos->LongPnL + pos->ShortPnL - pos->Cost << std::endl;
+    {
+        if (log)
+            std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [rsp_position] (source)" << source << " (rid)" << request_id << " (pos)long " << pos->LongPosition << " short " << pos->ShortPosition << " (cost)" << pos->Cost << " (pnl)" << pos->LongPnL + pos->ShortPnL - pos->Cost << std::endl;
+    }
     else
-        std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [rsp_position] (source)" << source << " (rid)" << request_id << " (pos)long " << pos->LongPosition << " short " << pos->ShortPosition << " (cost)" << pos->Cost << std::endl;
+    {
+        if (log)
+            std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [rsp_position] (source)" << source << " (rid)" << request_id << " (pos)long " << pos->LongPosition << " short " << pos->ShortPosition << " (cost)" << pos->Cost << std::endl;
+    }
 }
 
 int StrategyEngine::insert_limit_order(short source, std::string instrument_id, std::string exchange_id, double price, int volume, char direction, char offset)
@@ -137,7 +146,8 @@ int StrategyEngine::insert_limit_order(short source, std::string instrument_id, 
     order->PnL = 0.0;
     order->CloseOut = 0;
     td.order_opened[request_id] = order;
-    std::cout << parse_milliseconds(md.tick_time + td.latency) << " DEBUG " << name << " %% - [insert_limit_order] (source)" << source << " (rid)" << request_id << " (ticker)" << instrument_id << " (exchange)" << exchange_id << " (p)" << price << " (v)" << volume << " (direction)" << direction << " (offset)" << offset << std::endl;
+    if (log)
+        std::cout << parse_milliseconds(md.tick_time + td.latency) << " DEBUG " << name << " %% - [insert_limit_order] (source)" << source << " (rid)" << request_id << " (ticker)" << instrument_id << " (exchange)" << exchange_id << " (p)" << price << " (v)" << volume << " (direction)" << direction << " (offset)" << offset << std::endl;
     
     strcpy(td.rtn_order.InstrumentID, instrument_id.c_str());
     td.rtn_order.LimitPrice = price;
@@ -156,7 +166,8 @@ int StrategyEngine::cancel_order(short source, int order_id)
 {
     td.rid++;
     int request_id = td.rid;
-    std::cout << parse_milliseconds(md.tick_time + td.latency) << " DEBUG " << name << " %% - [cancel_order] (source)" << source << " (rid)" << request_id << " (order_id)" << order_id << std::endl;
+    if (log)
+        std::cout << parse_milliseconds(md.tick_time + td.latency) << " DEBUG " << name << " %% - [cancel_order] (source)" << source << " (rid)" << request_id << " (order_id)" << order_id << std::endl;
 
     auto it = td.order_opened.find(order_id);
     if (it == td.order_opened.end())

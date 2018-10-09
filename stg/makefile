@@ -1,9 +1,9 @@
-all: trendingTest
+all: strategy_demo
 .PHONY: all
-trendingTest: trendingTest.o StrategyEngine.o ../md/MdEngine.o ../td/TdEngine.o
-	g++ -o trendingTest trendingTest.o StrategyEngine.o ../md/MdEngine.o ../td/TdEngine.o -L /opt/anaconda2/lib -L ../td -l bz2 -l matchengine -std=c++11
-trendingTest.o: trendingTest.cpp
-	g++ -c trendingTest.cpp -o trendingTest.o -I ../md -I ../td -std=c++11
+strategy_demo: strategy_demo.o StrategyEngine.o ../md/MdEngine.o ../td/TdEngine.o
+	g++ -o strategy_demo strategy_demo.o StrategyEngine.o ../md/MdEngine.o ../td/TdEngine.o -L /opt/anaconda2/lib -L ../td -l bz2 -l matchengine -std=c++11
+strategy_demo.o: strategy_demo.cpp
+	g++ -c strategy_demo.cpp -o strategy_demo.o -I ../md -I ../td -std=c++11
 StrategyEngine.o: StrategyEngine.cpp
 	g++ -c StrategyEngine.cpp -o StrategyEngine.o -I ../md -I ../td -std=c++11
 ../md/MdEngine.o: ../md/MdEngine.cpp

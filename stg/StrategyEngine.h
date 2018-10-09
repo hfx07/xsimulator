@@ -18,17 +18,17 @@ class StrategyEngine
 {
 protected:
     const std::string name;
-    bool stop;
+    bool stop, log;
 
 public:
-    virtual void init(const std::string& date) = 0;
+    virtual void init(const std::string& date, bool print_log) = 0;
     virtual void run(short source);
     virtual void on_market_data(const LFMarketDataField* curr_md, short source, long rcv_time) {};
     virtual void on_rsp_position(const LFRspPositionField* pos, int request_id, short source, long rcv_time);
     virtual void on_rtn_trade(const LFRtnTradeField* rtn_trade, int request_id, short source, long rcv_time) {};
     virtual void on_rtn_order(const LFRtnOrderField* rtn_order, int request_id, short source, long rcv_time) {};
-    virtual void on_rsp_order_insert(const LFInputOrderField* order_insert, int request_id, short source, long rcv_time, short errorId=0, const char* errorMsg=nullptr) {};
-    virtual void on_rsp_order_action(const LFOrderActionField* order_action, int request_id, short source, long rcv_time, short errorId=0, const char* errorMsg=nullptr) {};
+    virtual void on_rsp_order_insert(const LFInputOrderField* order_insert, int request_id, short source, long rcv_time, short errorId = 0, const char* errorMsg = nullptr) {};
+    virtual void on_rsp_order_action(const LFOrderActionField* order_action, int request_id, short source, long rcv_time, short errorId = 0, const char* errorMsg = nullptr) {};
 
 public:
     int req_position(short source);

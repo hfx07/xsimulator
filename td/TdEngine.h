@@ -32,6 +32,8 @@ public:
     std::map<int, OrderField*> order_opened, order_closed;
     std::map<int, LFRtnTradeField*> order_traded;
 
+    bool print_order;
+
 protected:
     int last_tick_id;
     MatchEngine mt;

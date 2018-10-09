@@ -17,6 +17,8 @@ MdEngine::MdEngine()
 {
     tick_time = 0;
     tick_time_prev = 0;
+
+    print_log = false;
 }
 
 MdEngine::~MdEngine()
@@ -174,7 +176,7 @@ void MdEngine::init(const std::string& date, const std::string& period, const st
         std::ifstream file;
         int pos_next;
         file.open(filename.c_str(), std::ifstream::in);
-        std::getline(file, line); // hearder
+        std::getline(file, line); // header
         std::getline(file, line);
         while (file.good())
         {
@@ -193,13 +195,14 @@ void MdEngine::init(const std::string& date, const std::string& period, const st
         int pos_nextline, pos_next, linecout = 0;
 
         file = fopen(filename.c_str(), "r");
-        if (!file)
+        if (!file && print_log)
             std::cout << parse_milliseconds(tick_time) << " ERROR MdEngine %% - [init_market_data] file can not be opened" << std::endl;
         bzfile = BZ2_bzReadOpen(&bzerror, file, 0, 0, NULL, 0);
         if (bzerror != BZ_OK)
         {
             BZ2_bzReadClose(&bzerror, bzfile);
-            std::cout << parse_milliseconds(tick_time) << " ERROR MdEngine %% - [init_market_data] file can not be read" << std::endl;
+            if (print_log)
+                std::cout << parse_milliseconds(tick_time) << " ERROR MdEngine %% - [init_market_data] file can not be read" << std::endl;
         }
         bzerror = BZ_OK;
         while (bzerror == BZ_OK)
@@ -213,7 +216,7 @@ void MdEngine::init(const std::string& date, const std::string& period, const st
                 {
                     line += str.substr(0, pos_nextline);
                     linecout += 1;
-                    if (linecout > 1)
+                    if (linecout > 1) // header
                     {
                         GET_TICK_RECORD(line, pos, pos_next, md_tick);
                     }
@@ -226,7 +229,8 @@ void MdEngine::init(const std::string& date, const std::string& period, const st
         if (bzerror != BZ_STREAM_END)
         {
             BZ2_bzReadClose(&bzerror, bzfile);
-            std::cout << parse_milliseconds(tick_time) << " ERROR MdEngine %% - [init_market_data] file read is unfinished" << std::endl;
+            if (print_log)
+                std::cout << parse_milliseconds(tick_time) << " ERROR MdEngine %% - [init_market_data] file read is unfinished" << std::endl;
         }
         else
         {
@@ -236,16 +240,19 @@ void MdEngine::init(const std::string& date, const std::string& period, const st
             {
                 line += str.substr(0, pos_nextline);
                 linecout += 1;
-                if (linecout > 1)
+                if (linecout > 1) // header
                 {
                     GET_TICK_RECORD(line, pos, pos_next, md_tick);
                 }
             }
             else
-                std::cout << parse_milliseconds(tick_time) << " ERROR MdEngine %% - [init_market_data] last tick record can not be read" << std::endl;
+            {
+                if (print_log)
+                    std::cout << parse_milliseconds(tick_time) << " ERROR MdEngine %% - [init_market_data] last tick record can not be read" << std::endl;
+            }
             BZ2_bzReadClose(&bzerror, bzfile);
         }
-        if (fclose(file))
+        if (fclose(file) && print_log)
             std::cout << parse_milliseconds(tick_time) << " ERROR MdEngine %% - [init_market_data] file can not be closed" << std::endl;
     }
 

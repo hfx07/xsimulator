@@ -28,16 +28,20 @@ TdEngine::TdEngine()
     pos.LongPnL = 0.0;
     pos.ShortPnL = 0.0;
     pos.Cost = 0.0;
+
+    print_order = false;
 }
 
 TdEngine::~TdEngine()
 {
     for (auto& order: order_opened)
         delete order.second;
-    //std::cout << "               StartTime" << "    StartFlag" << "    OrderType" << "    OrderId" << "    OrderPrc" << "    OrderVol" << "    AheadVol" << "    FillPrc" << "    FillVol" << "    OrderDur" << "    FillDur" << "    TxnCost" << "          PnL" << "    CloseOut" << "    EndFlag" << "                   EndTime" << std::endl;
+    if (print_order)
+        std::cout << "               StartTime" << "    StartFlag" << "    OrderType" << "    OrderId" << "    OrderPrc" << "    OrderVol" << "    AheadVol" << "    FillPrc" << "    FillVol" << "    OrderDur" << "    FillDur" << "    TxnCost" << "          PnL" << "    CloseOut" << "    EndFlag" << "                   EndTime" << std::endl;
     for (auto& order: order_closed)
     {
-        //std::cout << std::setw(24) << order.second->StartTime << std::setw(13) << order.second->StartFlag << std::setw(13) << order.second->OrderType << std::setw(11) << order.second->OrderId << std::setw(12) << order.second->OrderPrc << std::setw(12) << order.second->OrderVol << std::setw(12) << order.second->AheadVol << std::setw(11) << order.second->FillPrc << std::setw(11) << order.second->FillVol << std::setw(12) << order.second->OrderDur << std::setw(11) << order.second->FillDur << std::setw(11) << order.second->TxnCost << std::setw(13) << order.second->PnL << std::setw(12) << order.second->CloseOut << std::setw(11) << order.second->EndFlag << std::setw(26) << order.second->EndTime << std::endl;
+        if (print_order)
+            std::cout << std::setw(24) << order.second->StartTime << std::setw(13) << order.second->StartFlag << std::setw(13) << order.second->OrderType << std::setw(11) << order.second->OrderId << std::setw(12) << order.second->OrderPrc << std::setw(12) << order.second->OrderVol << std::setw(12) << order.second->AheadVol << std::setw(11) << order.second->FillPrc << std::setw(11) << order.second->FillVol << std::setw(12) << order.second->OrderDur << std::setw(11) << order.second->FillDur << std::setw(11) << order.second->TxnCost << std::setw(13) << order.second->PnL << std::setw(12) << order.second->CloseOut << std::setw(11) << order.second->EndFlag << std::setw(26) << order.second->EndTime << std::endl;
         delete order.second;
     }
 }

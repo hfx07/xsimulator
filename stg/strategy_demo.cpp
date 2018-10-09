@@ -44,7 +44,7 @@ protected:
     std::string exchange;
     Signal signal;
 public:
-    virtual void init(const std::string& date);
+    virtual void init(const std::string& date, bool print_log);
     virtual void on_market_data(const LFMarketDataField* data, short source, long rcv_time);
     virtual void on_rsp_position(const LFRspPositionField* pos, int request_id, short source, long rcv_time);
     virtual void on_rtn_trade(const LFRtnTradeField* data, int request_id, short source, long rcv_time);
@@ -60,10 +60,11 @@ Strategy::Strategy(const std::string& name): StrategyEngine(name)
     stop = false;
 }
 
-void Strategy::init(const std::string& date)
+void Strategy::init(const std::string& date, bool print_log)
 {
     // necessary initialization of internal fields
     td_connected = false;
+    log = print_log;
     trade_completed = true;
     md_num = 0;
     traded_volume = 0;
@@ -86,11 +87,13 @@ void Strategy::on_rsp_position(const LFRspPositionField* pos, int request_id, sh
     if (request_id == -1 && source == SOURCE_INDEX)
     {
         td_connected = true;
-        std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [rsp_position] (source)" << source << " (rid)" << request_id << " (td)connected" << std::endl;
+        if (log)
+            std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [rsp_position] (source)" << source << " (rid)" << request_id << " (td)connected" << std::endl;
     }
     else
     {
-        std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [rsp_position] (source)" << source << " (rid)" << request_id << " (pos)long " << pos->LongPosition << " short " << pos->ShortPosition << " (cost)" << pos->Cost << " (pnl)" << pos->LongPnL + pos->ShortPnL - pos->Cost << std::endl;
+        if (log)
+            std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [rsp_position] (source)" << source << " (rid)" << request_id << " (pos)long " << pos->LongPosition << " short " << pos->ShortPosition << " (cost)" << pos->Cost << " (pnl)" << pos->LongPnL + pos->ShortPnL - pos->Cost << std::endl;
     }
 }
 
@@ -161,7 +164,8 @@ void Strategy::on_market_data(const LFMarketDataField* curr_md, short source, lo
 
 void Strategy::on_rtn_trade(const LFRtnTradeField* rtn_trade, int request_id, short source, long rcv_time)
 {
-    std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [rtn_trade] (source)" << source << " (rid)" << request_id << " (ticker)" << rtn_trade->InstrumentID << " (p)" << rtn_trade->Price << " (v)" << rtn_trade->Volume << " (direction)" << rtn_trade->Direction << " (offset)" << rtn_trade->OffsetFlag << " (pos)long " << td.pos.LongPosition << " short " << td.pos.ShortPosition << " (cost)" << td.pos.Cost << " (pnl)" << td.pos.LongPnL + td.pos.ShortPnL - td.pos.Cost << std::endl;
+    if (log)
+        std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [rtn_trade] (source)" << source << " (rid)" << request_id << " (ticker)" << rtn_trade->InstrumentID << " (p)" << rtn_trade->Price << " (v)" << rtn_trade->Volume << " (direction)" << rtn_trade->Direction << " (offset)" << rtn_trade->OffsetFlag << " (pos)long " << td.pos.LongPosition << " short " << td.pos.ShortPosition << " (cost)" << td.pos.Cost << " (pnl)" << td.pos.LongPnL + td.pos.ShortPnL - td.pos.Cost << std::endl;
     traded_volume += rtn_trade->Volume;
     if (rid == request_id)
     {
@@ -189,7 +193,8 @@ void Strategy::on_rtn_trade(const LFRtnTradeField* rtn_trade, int request_id, sh
     }
     if (traded_volume >= TRADED_VOLUME_LIMIT)
     {
-        std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [finish] stop trading due to traded volume limit (v_trd)" << traded_volume << " (v_trd_limit)" << TRADED_VOLUME_LIMIT << std::endl;
+        if (log)
+            std::cout << parse_milliseconds(rcv_time) << " DEBUG " << name << " %% - [finish] stop trading due to traded volume limit (v_trd)" << traded_volume << " (v_trd_limit)" << TRADED_VOLUME_LIMIT << std::endl;
         stop = true;
     }
 }
@@ -203,6 +208,7 @@ int main(int argc, const char* argv[])
 {
     std::vector<std::string> args;
     std::string period = "day";
+    bool print_log = false;
     for (int i = 1; i < argc; i++)
     {
         if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--period") == 0)
@@ -217,22 +223,29 @@ int main(int argc, const char* argv[])
         }
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
-            std::cerr << "Usage: " << argv[0] << " DATE INSTRUMENT_ID SOURCE LATENCY [-p, --period PERIOD] [-h, --help]" << std::endl;
+            std::cout << "Usage: " << argv[0] << " DATE INSTRUMENT_ID SOURCE LATENCY [-p, --period PERIOD] [-o, --order] [-l, --log] [-h, --help]" << std::endl;
             return 0;
+        }
+        else if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--order") == 0)
+            td.print_order = true;
+        else if (strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--log") == 0)
+        {
+            md.print_log = true;
+            print_log = true;
         }
         else
             args.push_back(argv[i]);
     }
     if (args.size() != 4)
     {
-        std::cerr << "Usage: " << argv[0] << " DATE INSTRUMENT_ID SOURCE LATENCY [-p, --period PERIOD] [-h, --help]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " DATE INSTRUMENT_ID SOURCE LATENCY [-p, --period PERIOD] [-o, --order] [-l, --log] [-h, --help]" << std::endl;
         return 1;
     }
     md.init(args[0], period, args[1], args[2]);
     td.init(args[0], period, md.instrument_id, atoi(args[3].c_str()), HIDDEN_QUEUE_INIT_VOL, HIDDEN_QUEUE_ADD_RATE, HIDDEN_QUEUE_CXL_RATE);
     Strategy stg(std::string("strategy_demo"));
     stg.ticker = md.instrument_id;
-    stg.init(args[0]);
+    stg.init(args[0], print_log);
     stg.run(SOURCE_INDEX);
     return 0;
 }

@@ -20,6 +20,8 @@ public:
     long tick_time, tick_time_prev;
     std::string instrument_id;
 
+    bool print_log;
+
 protected:
     std::string line;
     std::vector<LFMarketDataField*>::iterator it_tick;

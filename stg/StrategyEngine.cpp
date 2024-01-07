@@ -15,7 +15,11 @@ StrategyEngine::StrategyEngine(const std::string& name): name(name)
     stop = false;
 }
 
-StrategyEngine::~StrategyEngine() {}
+StrategyEngine::~StrategyEngine()
+{
+    if(!td.print_order && !log)
+        std::cout << td.pos.LongPnL + td.pos.ShortPnL - td.pos.Cost << std::endl;
+}
 
 void StrategyEngine::run(short source)
 {
@@ -27,8 +31,8 @@ void StrategyEngine::run(short source)
             continue;
         if (td.tick_period.compare("night") == 0 && md.tick_time >= td.morning_start_time + 24 * 60 * 60 * 1000)
             continue;
-        if (md.tick_record->LastPrice > md.tick_record->UpperLimitPrice || md.tick_record->LastPrice < md.tick_record->LowerLimitPrice)
-            continue;
+        //if (md.tick_record->LastPrice > md.tick_record->UpperLimitPrice || md.tick_record->LastPrice < md.tick_record->LowerLimitPrice)
+        //    continue;
         
         // when upperlimit or lowerlimit is reached
         if (md.tick_record->AskVolume1 == 0)
@@ -98,8 +102,7 @@ int StrategyEngine::req_position(short source)
     }
     else
     {
-        if (log)
-            std::cout << parse_milliseconds(md.tick_time) << " ERROR " << name << " %% - [req_position] (source)" << source << " (errMsg)交易时段必须为day、night或both" << std::endl;
+        std::cerr << parse_milliseconds(md.tick_time) << " ERROR " << name << " %% - [req_position] (source)" << source << " (errMsg)交易时段必须为day、night或both" << std::endl;
         stop = true;
     }
     return -1;

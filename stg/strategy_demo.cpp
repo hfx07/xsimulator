@@ -206,12 +206,18 @@ void Strategy::on_rsp_order_insert(const LFInputOrderField* order_insert, int re
 
 int main(int argc, const char* argv[])
 {
+    Strategy stg(std::string("strategy_demo"));
     std::vector<std::string> args;
     std::string period = "day";
     bool print_log = false;
     for (int i = 1; i < argc; i++)
     {
-        if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--period") == 0)
+        if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
+        {
+            std::cout << "Usage: " << argv[0] << " DATE INSTRUMENT_ID SOURCE LATENCY [-p, --period PERIOD] [-o, --order] [-l, --log] [-h, --help]" << std::endl;
+            return 0;
+        }
+        else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--period") == 0)
         {
             if (i + 1 < argc)
                 period = argv[++i];
@@ -221,18 +227,10 @@ int main(int argc, const char* argv[])
                 return 1;
             }
         }
-        else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
-        {
-            std::cout << "Usage: " << argv[0] << " DATE INSTRUMENT_ID SOURCE LATENCY [-p, --period PERIOD] [-o, --order] [-l, --log] [-h, --help]" << std::endl;
-            return 0;
-        }
         else if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--order") == 0)
             td.print_order = true;
         else if (strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--log") == 0)
-        {
-            md.print_log = true;
             print_log = true;
-        }
         else
             args.push_back(argv[i]);
     }
@@ -243,7 +241,6 @@ int main(int argc, const char* argv[])
     }
     md.init(args[0], period, args[1], args[2]);
     td.init(args[0], period, md.instrument_id, atoi(args[3].c_str()), HIDDEN_QUEUE_INIT_VOL, HIDDEN_QUEUE_ADD_RATE, HIDDEN_QUEUE_CXL_RATE);
-    Strategy stg(std::string("strategy_demo"));
     stg.ticker = md.instrument_id;
     stg.init(args[0], print_log);
     stg.run(SOURCE_INDEX);

@@ -177,13 +177,19 @@ void TdEngine::receive_market_data(LFMarketDataField* data, long tick_time, long
             if (strcmp(it_order->second->StartFlag, "Exit") == 0)
             {
                 auto it_last_open_order = --order_closed.end();
-                while (strcmp(it_last_open_order->second->StartFlag, "Entry") != 0 || strcmp(it_last_open_order->second->EndFlag, "Fill") != 0)
-                    --it_last_open_order;
-                it_last_open_order->second->FillDur = tick_id - it_last_open_order->second->OrderId - it_last_open_order->second->OrderDur;
                 if (strcmp(it_order->second->OrderType, "Buy") == 0)
+                {
+                    while (strcmp(it_last_open_order->second->StartFlag, "Entry") != 0 || strcmp(it_last_open_order->second->EndFlag, "Fill") != 0 || strcmp(it_last_open_order->second->OrderType, "Sell") != 0)
+                        --it_last_open_order;
                     it_order->second->PnL = (it_last_open_order->second->FillPrc - it_order->second->FillPrc) * it_order->second->FillVol * contract_size - it_order->second->TxnCost - it_last_open_order->second->TxnCost;
+                }
                 else
+                {
+                    while (strcmp(it_last_open_order->second->StartFlag, "Entry") != 0 || strcmp(it_last_open_order->second->EndFlag, "Fill") != 0 || strcmp(it_last_open_order->second->OrderType, "Buy") != 0)
+                        --it_last_open_order;
                     it_order->second->PnL = (it_order->second->FillPrc - it_last_open_order->second->FillPrc) * it_order->second->FillVol * contract_size - it_order->second->TxnCost - it_last_open_order->second->TxnCost;
+                }
+                it_last_open_order->second->FillDur = tick_id - it_last_open_order->second->OrderId - it_last_open_order->second->OrderDur;
                 it_last_open_order->second->CloseOut = it_order->second->OrderId;
             }
             strcpy(it_order->second->EndFlag, "Fill");
